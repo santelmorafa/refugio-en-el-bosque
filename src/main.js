@@ -12,7 +12,11 @@ import { CharacterSelect } from './ui/CharacterSelect.js';
 import { Game } from './core/Game.js';
 import { TouchControls } from './ui/TouchControls.js';
 import { SaveSystem } from './systems/SaveSystem.js';
+import { startUpdateChecker } from './utils/UpdateChecker.js';
 import { isTouchDevice, applyMobileProfile } from './config.js';
+
+// Detecta despliegues nuevos mientras la pestaña está abierta (solo producción).
+startUpdateChecker(import.meta.url);
 
 async function boot() {
   // Detecta teléfono/tablet y aplica el perfil de rendimiento móvil ANTES de
