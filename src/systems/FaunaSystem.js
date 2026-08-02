@@ -81,6 +81,9 @@ export class FaunaSystem {
 
   isThreatActive() { return this.phase !== PHASE.IDLE; }
 
+  // El oso solo acecha de noche/anochecer (lo fija Game desde el ciclo día/noche).
+  get isNightEnough() { return (this.nightFactor || 0) >= 0.35; }
+
   update(dt) {
     if (!this.enabled) return;
     this._playClock += dt;
@@ -99,7 +102,12 @@ export class FaunaSystem {
   // ------------------------------------------------------------------ IDLE ----
   _updateIdle(dt) {
     this._nextAttackIn -= dt;
-    if (this._nextAttackIn <= 0) this._startWarning();
+    // El oso SOLO aparece de noche. Si el temporizador venció pero es de día,
+    // esperamos (sin bajar de 0) hasta que caiga la noche.
+    if (this._nextAttackIn <= 0) {
+      this._nextAttackIn = 0;
+      if (this.isNightEnough) this._startWarning();
+    }
   }
 
   // --------------------------------------------------------------- WARNING ----
@@ -167,6 +175,8 @@ export class FaunaSystem {
 
     // Si el jugador se aleja muchísimo, el oso se rinde.
     if (dist > cfg.giveUpDistance && b.state !== BEAR.LEAVE) b.state = BEAR.LEAVE;
+    // Si amanece durante el ataque, el oso se retira (solo caza de noche).
+    if (!this.isNightEnough && this.nightFactor < 0.2 && b.state !== BEAR.LEAVE) b.state = BEAR.LEAVE;
 
     switch (b.state) {
       case BEAR.APPROACH: {
@@ -250,6 +260,8 @@ export class FaunaSystem {
   }
 
   _clawPlayer() {
+    // En modo demo el oso solo hace el gesto/rugido (no daña al bot).
+    if (this.noPlayerDamage) { bus.emit(EVENTS.ROAR, { near: true }); return; }
     const dmg = this.bearAttackDamage;
     this.survival.damage(dmg);
     // Suelta parte del inventario en el suelo (recogible).

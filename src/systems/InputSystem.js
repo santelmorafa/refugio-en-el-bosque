@@ -26,6 +26,9 @@ export class InputSystem {
     this.touchMode = false;                 // true en teléfonos: no pedir pointer lock
     this.touch = { moveX: 0, moveY: 0, run: false, jump: false, interactHold: false };
 
+    // En MODO DEMO se ignora el teclado/ratón del usuario (conduce el bot).
+    this.demoLock = false;
+
     this._bind();
   }
 
@@ -34,6 +37,7 @@ export class InputSystem {
     window.addEventListener('keyup', (e) => this._onKey(e, false));
 
     this.dom.addEventListener('mousedown', (e) => {
+      if (this.demoLock) return;   // en la demo el ratón del usuario no juega
       if (e.button === 0) this.buttons.left = true;
       if (e.button === 2) this.buttons.right = true;
       // En móvil NO usamos pointer lock (la cámara va por arrastre táctil).
@@ -70,6 +74,7 @@ export class InputSystem {
     const code = e.code;
     // Evita que Espacio/flechas hagan scroll o activen botones enfocados.
     if (code === 'Space' || code.startsWith('Arrow')) e.preventDefault();
+    if (this.demoLock) return;   // en la demo el teclado del usuario no juega
     if (down) this.keys.add(code); else this.keys.delete(code);
 
     // Acciones de pulsación única (edge-triggered) se marcan aquí.

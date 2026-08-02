@@ -36,10 +36,11 @@ async function boot() {
 
   loading.remove();
 
-  // Menú de inicio → (continuar) o selección de personaje.
-  let gender = null, saveData = null;
+  // Menú de inicio → (continuar) / demo / selección de personaje.
+  let gender = null, saveData = null, demo = false;
   for (;;) {
     const action = await new StartMenu().show();
+    if (action === 'demo') { gender = 'female'; demo = true; break; } // paseo automático
     if (action === 'continue') {
       saveData = SaveSystem.load();
       if (saveData) { gender = saveData.gender; break; }
@@ -50,12 +51,12 @@ async function boot() {
     gender = chosen; saveData = null; break;
   }
 
-  // Arranca el juego (reanuda si hay guardado).
-  const game = new Game(renderer, assets, gender, saveData);
+  // Arranca el juego (reanuda si hay guardado; o modo demo).
+  const game = new Game(renderer, assets, gender, saveData, demo);
   await game.start();
 
-  // En móvil: monta los controles táctiles (joystick + botones).
-  if (mobile) game.touch = new TouchControls(game);
+  // En móvil: monta los controles táctiles (joystick + botones), salvo en demo.
+  if (mobile && !demo) game.touch = new TouchControls(game);
 
   // Expuesto para depuración desde la consola del navegador.
   window.__GAME__ = game;

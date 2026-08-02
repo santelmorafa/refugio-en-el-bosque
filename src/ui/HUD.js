@@ -41,6 +41,14 @@ export class HUD {
 
   setRunning(on) { this.runIndicator.classList.toggle('show', on); }
 
+  // --- Modo demo (attract) ---
+  showDemo() {
+    this.demoUi.classList.add('show');
+    this.tutorialEl.classList.remove('show'); // en la demo no hay tutorial
+    this._tutIndex = 99;
+  }
+  setDemoCaption(text) { this.demoCaptionEl.textContent = text; }
+
   // --- Tutorial guiado (aparece en partida nueva; se puede saltar) ---
   _initTutorial() {
     let done = false;
@@ -117,6 +125,12 @@ export class HUD {
       <div class="tutorial">
         <span class="tut-text"></span>
         <button class="tut-skip clickable">Saltar tutorial ✕</button>
+      </div>
+
+      <div class="demo-ui">
+        <div class="demo-badge">🎬 MODO DEMO — solo mirando</div>
+        <div class="demo-caption"></div>
+        <button class="btn demo-exit clickable">Salir de la demo ✕</button>
       </div>
 
       <div class="danger-banner">⚠️ <b>¡PELIGRO!</b> El oso viene — corre a un refugio válido</div>
@@ -251,6 +265,9 @@ export class HUD {
     this.tutorialEl = this.el.querySelector('.tutorial');
     this.tutTextEl = this.el.querySelector('.tut-text');
     this.el.querySelector('.tut-skip').addEventListener('click', () => this._endTutorial());
+    this.demoUi = this.el.querySelector('.demo-ui');
+    this.demoCaptionEl = this.el.querySelector('.demo-caption');
+    this.el.querySelector('.demo-exit').addEventListener('click', () => bus.emit('ui:quitToMenu'));
 
     this.el.querySelector('[data-help]').addEventListener('click', () => this.toggleHelp());
     this.el.querySelector('.help-close').addEventListener('click', () => this.toggleHelp());

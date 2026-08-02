@@ -28,16 +28,18 @@ import { LightManager } from '../systems/LightManager.js';
 import { ChallengeSystem } from '../systems/ChallengeSystem.js';
 import { ParticleSystem } from '../systems/ParticleSystem.js';
 import { SaveSystem } from '../systems/SaveSystem.js';
+import { DemoController } from '../systems/DemoController.js';
 
 import { PlayerModel } from '../player/PlayerModel.js';
 import { HUD } from '../ui/HUD.js';
 
 export class Game {
-  constructor(renderer, assets, gender, saveData = null) {
+  constructor(renderer, assets, gender, saveData = null, demo = false) {
     this.renderer = renderer;   // core/Renderer ya inicializado (comparte GL)
     this.assets = assets;
     this.gender = gender;
     this.saveData = saveData;   // si viene, se reanuda la partida guardada
+    this.demo = demo;           // modo demo (attract): el bot juega, no el usuario
     this.state = GAME_STATE.LOADING;
     this.clock = new THREE.Clock();
     this._accum = 0;
@@ -110,7 +112,17 @@ export class Game {
     this._wireEvents();
     this._setupSaveAndRecords();
 
-    if (this.saveData) {
+    if (this.demo) {
+      // MODO DEMO: el bot conduce; el usuario no juega. Sin intro, sin guardado.
+      this.intro.placeDestroyedNow();
+      this.survival.reset();
+      for (const k of Object.keys(this.inventory.items)) this.inventory.items[k] = 500;
+      bus.emit(EVENTS.INVENTORY_CHANGED, this.inventory.snapshot());
+      this.input.demoLock = true;
+      this.hud.showDemo();
+      this.demoCtl = new DemoController(this);
+      this._setState(GAME_STATE.PLAYING);
+    } else if (this.saveData) {
       // Reanudar partida guardada: saltar intro, restaurar estado.
       this.intro.placeDestroyedNow();
       this.applySave(this.saveData);
@@ -167,7 +179,7 @@ export class Game {
   // Guardado automático + récords históricos (días, mayor construcción).
   _setupSaveAndRecords() {
     bus.on(EVENTS.DAY_PASSED, () => {
-      if (this.state !== GAME_STATE.PLAYING) return;
+      if (this.demo || this.state !== GAME_STATE.PLAYING) return;
       this.runDays += 1;
       SaveSystem.updateRecords({ days: this.runDays });
       this._emitRecords();
@@ -175,6 +187,7 @@ export class Game {
       bus.emit(EVENTS.TOAST, `🌅 Día ${this.runDays} sobrevivido`);
     });
     bus.on(EVENTS.BUILD_PLACED, () => {
+      if (this.demo) return;
       SaveSystem.updateRecords({ pieces: this.building.placed.length });
       this._emitRecords();
     });
@@ -195,6 +208,7 @@ export class Game {
   }
 
   _autosave() {
+    if (this.demo) return; // la demo nunca guarda
     if (this.state === GAME_STATE.CHARACTER_SELECT || this.state === GAME_STATE.LOADING) return;
     SaveSystem.save(this.buildSaveState());
     bus.emit(EVENTS.GAME_SAVED, {});
@@ -324,6 +338,9 @@ export class Game {
   }
 
   _update(dt) {
+    // MODO DEMO: el bot fija el input (touch/edges) ANTES de leerlo.
+    if (this.demo && this.demoCtl) this.demoCtl.update(dt);
+
     this.input.update();
     // Snapshot de pulsaciones de este frame, visible a todos los subsistemas.
     const pressed = this.input.consumePressed();
@@ -392,8 +409,9 @@ export class Game {
       else this.gathering.currentTarget = null;
 
       this.building.update(dt, this.input, this.player.position);
-      this.survival.update(dt, pstate);
-      // De noche y en tormenta los animales son más agresivos.
+      if (!this.demo) this.survival.update(dt, pstate); // en demo el bot no pasa hambre
+      // El oso solo acecha de noche; y de noche/tormenta es más agresivo.
+      this.fauna.nightFactor = this.dayNight.nightFactor;
       this.fauna.extraAggression =
         this.dayNight.nightFactor * CONFIG.fauna.nightAggression +
         this.weather.stormFactor * CONFIG.fauna.stormAggression;

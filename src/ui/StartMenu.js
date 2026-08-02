@@ -12,6 +12,13 @@ export class StartMenu {
       const hasSave = SaveSystem.hasSave();
       const meta = SaveSystem.meta();
       const rec = SaveSystem.getRecords();
+      // Versión = timestamp del build (en Vercel, ~ el del push). __BUILD_TIME__
+      // lo inyecta Vite (ver vite.config.js).
+      const iso = (typeof __BUILD_TIME__ !== 'undefined') ? __BUILD_TIME__ : new Date().toISOString();
+      const bd = new Date(iso);
+      const pad = (n) => String(n).padStart(2, '0');
+      const version = `v${bd.getUTCFullYear()}.${pad(bd.getUTCMonth() + 1)}.${pad(bd.getUTCDate())}·${pad(bd.getUTCHours())}${pad(bd.getUTCMinutes())}`;
+      const stamp = bd.toISOString().slice(0, 16).replace('T', ' ') + ' UTC';
 
       const screen = document.createElement('div');
       screen.className = 'screen start-menu';
@@ -29,9 +36,11 @@ export class StartMenu {
         <div class="menu-btns">
           ${hasSave ? `<button class="btn btn-continue">▶ Continuar${meta ? ` (día ${meta.day})` : ''}</button>` : ''}
           <button class="btn btn-new">${hasSave ? 'Nueva partida' : '▶ Jugar'}</button>
+          <button class="btn btn-ghost btn-demo">🎬 Ver Demo</button>
           ${hasSave ? `<button class="btn btn-ghost btn-erase">🗑 Borrar guardado</button>` : ''}
         </div>
         <p class="menu-hint">Se guarda solo en tu navegador. Auriculares recomendados 🎧</p>
+        <div class="version" title="${stamp}">${version}</div>
       `;
       document.getElementById('ui-root').appendChild(screen);
 
@@ -39,6 +48,7 @@ export class StartMenu {
 
       const cont = screen.querySelector('.btn-continue');
       if (cont) cont.addEventListener('click', () => finish('continue'));
+      screen.querySelector('.btn-demo').addEventListener('click', () => finish('demo'));
       screen.querySelector('.btn-new').addEventListener('click', () => {
         if (hasSave && !confirm('Empezar una partida nueva borrará la guardada. ¿Seguro?')) return;
         SaveSystem.clear();
