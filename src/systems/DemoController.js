@@ -162,7 +162,7 @@ export class DemoController {
           return this._cast && !this.p.busy && this.t > 4;
         } },
 
-      { cap: '🌙 De noche llega el OSO GIGANTE — refúgiate y enciende fogatas', max: 9,
+      { cap: '🌙 De noche llega el OSO GIGANTE — enciende fogatas', max: 6,
         enter() {
           this.game.dayNight.t = 0.72;                 // noche
           // Fogata para iluminar.
@@ -172,11 +172,29 @@ export class DemoController {
           this.game.fauna.nightFactor = 1;
           this.game.fauna.noPlayerDamage = true;
           this.game.fauna._spawnBear();
+          if (this.game.fauna.bear) this.game.fauna.bear.pos.set(this.p.position.x - 7, 0, this.p.position.z);
         },
         run() { return false; } },
 
+      { cap: '🌳 ¡Trépate a un árbol! Arriba el oso no te atrapa (pero el aguante se agota)', max: 10,
+        enter() { this._target = this._nearest('tree'); this._climbT = 0; this.game.fauna.nightFactor = 1; },
+        run(dt) {
+          if (!this._target) return true;
+          if (!this.p.climbing) {
+            if (this._steerTo(this._target, 1.6)) {
+              const td = this.world.findTreeNear(this.p.position, 2.2);
+              if (td) this.p._enterClimb(td); else return true;
+            }
+            return false;
+          }
+          // Sube y se queda arriba (a salvo) para mostrar la barra de aguante.
+          this._climbT += dt;
+          this.input.touch.moveY = this._climbT < 2.6 ? 1 : 0;
+          return false; // hasta el máximo (o hasta que resbale)
+        } },
+
       { cap: '✅ Fin de la demo — así se juega. Pulsa "Salir de la demo".', max: 9999,
-        enter() { this.game.fauna.resetThreat(); this._resetTouch(); },
+        enter() { if (this.p.climbing) this.p._exitClimb(false); this.game.fauna.resetThreat(); this._resetTouch(); },
         run() { this._resetTouch(); return false; } },
     ];
   }

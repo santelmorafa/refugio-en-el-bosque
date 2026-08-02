@@ -29,8 +29,9 @@ export class ProceduralHumanoid {
 
     const skin = assets.material('skin').clone();
     const female = gender === 'female';
-    // Elena: tono de piel más CREMA (menos marrón).
-    if (female) skin.color.setHex(0xf0d6b8);
+    // Elena: rostro/piel color CREMA claro (nada de marrón). Emisivo sutil para
+    // que la cara no se vea oscura bajo sombra o de noche.
+    if (female) { skin.color.setHex(0xf5e7d4); skin.emissive = new THREE.Color(0x3a2c1e); skin.emissiveIntensity = 0.25; }
     // Vestimenta de EXCURSIÓN / bosque: chaqueta (olivo / terracota), pantalón
     // cargo caqui, mochila y gorra.
     const shirt = new THREE.MeshStandardMaterial({
@@ -122,6 +123,8 @@ export class ProceduralHumanoid {
     this.legR = this._makeLeg(skin, pants); this.legR.group.position.set(-0.13, 0, 0); this.pelvis.add(this.legR.group);
 
     this.root.traverse((o) => { if (o.isMesh) o.castShadow = true; });
+    // La gorra/visera NO proyecta sombra (para no oscurecer la cara).
+    capDome.castShadow = false; brim.castShadow = false;
   }
 
   _makeArm(skin, shirt) {
