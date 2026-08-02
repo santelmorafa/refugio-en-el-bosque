@@ -1,0 +1,254 @@
+/* ============================================================================
+   styles.css — UI del juego (HUD, menús, pantallas). Sobrepuesta al canvas.
+   ========================================================================== */
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body { width: 100%; height: 100%; overflow: hidden; background: #0a0d0b; }
+body { font-family: 'Segoe UI', system-ui, sans-serif; color: #f0eadb; user-select: none; }
+
+#game-root, #ui-root { position: fixed; inset: 0; }
+#game-root canvas { display: block; }
+#ui-root { pointer-events: none; }
+#ui-root .clickable { pointer-events: auto; }
+
+/* --- Pantalla de carga / selección --- */
+.screen {
+  position: fixed; inset: 0; display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: 24px;
+  background: radial-gradient(circle at 50% 30%, #1c2a1e, #0a0d0b 80%);
+  pointer-events: auto; z-index: 20;
+}
+.screen h1 { font-size: 44px; letter-spacing: 1px; text-shadow: 0 4px 20px #000; }
+.screen h1 .accent { color: #7dc46b; }
+.screen p.subtitle { opacity: 0.8; margin-top: -12px; }
+
+/* --- Menú de inicio --- */
+.start-menu { gap: 30px; }
+.title-art { text-align: center; }
+.title-art h1 { font-size: 58px; text-shadow: 0 6px 30px #000, 0 0 60px rgba(125,196,107,.3); }
+.start-menu .subtitle { font-size: 18px; opacity: .85; }
+.records { display: flex; gap: 24px; }
+.rec { background: rgba(0,0,0,.4); border: 1px solid rgba(255,255,255,.14); border-radius: 12px; padding: 14px 26px; text-align: center; min-width: 150px; }
+.rec-n { display: block; font-size: 34px; font-weight: 800; color: #f6d35b; }
+.rec-l { display: block; font-size: 12px; opacity: .8; margin-top: 4px; }
+.menu-btns { display: flex; flex-direction: column; gap: 12px; align-items: center; width: 300px; }
+.menu-btns .btn { width: 100%; }
+.btn-ghost { background: rgba(255,255,255,.12); color: #f0eadb; box-shadow: none; }
+.menu-hint { font-size: 12px; opacity: .55; }
+
+/* --- Selección de personaje mejorada --- */
+.char-screen h1 { font-size: 36px; }
+.char-desc { font-size: 12px; opacity: .7; padding: 0 12px 12px; }
+.char-actions { display: flex; gap: 16px; }
+.char-card .label { padding-bottom: 4px; }
+
+.char-select { display: flex; gap: 40px; }
+.char-card {
+  width: 260px; height: 380px; border-radius: 16px; cursor: pointer;
+  background: rgba(0,0,0,0.35); border: 2px solid rgba(255,255,255,0.12);
+  display: flex; flex-direction: column; align-items: center; overflow: hidden;
+  transition: transform .18s, border-color .18s, box-shadow .18s;
+}
+.char-card:hover { transform: translateY(-6px); border-color: #7dc46b; box-shadow: 0 10px 40px rgba(0,0,0,.6); }
+.char-card.selected { border-color: #7dc46b; box-shadow: 0 0 0 3px rgba(125,196,107,.4); }
+.char-card .preview { flex: 1; width: 100%; }
+.char-card .label { padding: 14px; font-size: 20px; font-weight: 600; }
+
+.btn {
+  padding: 14px 42px; font-size: 20px; border-radius: 10px; border: none; cursor: pointer;
+  background: linear-gradient(#7dc46b, #4f9a3f); color: #08130a; font-weight: 700;
+  box-shadow: 0 6px 20px rgba(0,0,0,.5); transition: transform .12s;
+}
+.btn:hover { transform: scale(1.04); }
+.btn:disabled { filter: grayscale(1) brightness(.6); cursor: default; }
+
+/* --- HUD --- */
+.hud { position: fixed; inset: 0; pointer-events: none; }
+
+.bars { position: absolute; left: 20px; bottom: 20px; width: 260px; display: flex; flex-direction: column; gap: 8px; }
+.bar { height: 20px; border-radius: 10px; background: rgba(0,0,0,.45); overflow: hidden; position: relative; border: 1px solid rgba(255,255,255,.15); }
+.bar .fill { height: 100%; width: 100%; transition: width .15s; }
+.bar.hunger .fill { background: linear-gradient(90deg, #e0a53c, #f6d35b); }
+.bar.health .fill { background: linear-gradient(90deg, #d6453c, #ff7b6e); }
+.bar .lbl { position: absolute; inset: 0; display: flex; align-items: center; padding-left: 10px; font-size: 12px; font-weight: 700; text-shadow: 0 1px 2px #000; }
+
+.inventory { position: absolute; right: 20px; top: 56px; display: grid; grid-template-columns: repeat(2, auto); gap: 6px; justify-items: end; }
+.inv-item { background: rgba(0,0,0,.5); padding: 6px 12px; border-radius: 9px; font-size: 15px; font-weight: 600; border: 1px solid rgba(255,255,255,.12); min-width: 74px; text-align: right; }
+.inv-item.food { border-color: rgba(246,211,91,.4); }
+.inv-item.food:hover { background: rgba(246,211,91,.18); }
+
+.compass { position: absolute; top: 20px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,.5); padding: 8px 16px; border-radius: 10px; display: flex; align-items: center; gap: 10px; border: 1px solid rgba(255,255,255,.12); }
+.compass .arrow { font-size: 22px; display: inline-block; transition: transform .1s; }
+.compass .dist { font-size: 13px; opacity: .85; }
+
+.shelter { position: absolute; right: 20px; bottom: 20px; background: rgba(0,0,0,.5); padding: 10px 16px; border-radius: 10px; font-size: 14px; border: 1px solid rgba(255,255,255,.12); text-align: right; }
+.shelter .lvl { font-size: 22px; font-weight: 800; color: #7dc46b; }
+
+.prompt { position: absolute; left: 50%; bottom: 130px; transform: translateX(-50%); background: rgba(0,0,0,.6); padding: 10px 18px; border-radius: 10px; font-size: 16px; opacity: 0; transition: opacity .15s; }
+.prompt.show { opacity: 1; }
+
+.crosshair { position: absolute; left: 50%; top: 50%; width: 6px; height: 6px; margin: -3px 0 0 -3px; border-radius: 50%; background: rgba(255,255,255,.7); box-shadow: 0 0 4px #000; }
+
+.toast-wrap { position: absolute; left: 50%; bottom: 200px; transform: translateX(-50%); display: flex; flex-direction: column; gap: 6px; align-items: center; }
+.toast { background: rgba(20,30,20,.85); padding: 8px 16px; border-radius: 8px; font-size: 15px; border: 1px solid rgba(125,196,107,.4); animation: toastIn .3s ease; }
+@keyframes toastIn { from { transform: translateY(10px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+/* --- Menú de construcción --- */
+.build-menu { position: absolute; left: 50%; bottom: 20px; transform: translateX(-50%); display: none; gap: 10px; pointer-events: auto; }
+.build-menu.show { display: flex; }
+.build-piece { background: rgba(0,0,0,.55); border: 2px solid rgba(255,255,255,.15); border-radius: 10px; padding: 10px 14px; cursor: pointer; text-align: center; min-width: 90px; }
+.build-piece.active { border-color: #7dc46b; background: rgba(125,196,107,.2); }
+.build-piece .k { display: block; font-size: 11px; opacity: .6; }
+.build-piece .cost { display: block; font-size: 11px; opacity: .8; margin-top: 4px; color: #f6d35b; }
+
+.build-banner { position: absolute; top: 70px; left: 50%; transform: translateX(-50%); background: rgba(125,196,107,.2); border: 1px solid #7dc46b; padding: 8px 18px; border-radius: 10px; display: none; }
+.build-banner.show { display: block; }
+
+/* --- Muerte / mensajes de estado --- */
+.death { position: fixed; inset: 0; background: rgba(60,0,0,.55); display: none; align-items: center; justify-content: center; flex-direction: column; gap: 20px; z-index: 15; pointer-events: none; }
+.death.show { display: flex; }
+.death h2 { font-size: 40px; text-shadow: 0 4px 20px #000; }
+
+.hint { position: absolute; left: 20px; top: 20px; font-size: 12px; opacity: .55; line-height: 1.6; background: rgba(0,0,0,.35); padding: 8px 12px; border-radius: 8px; max-width: 320px; }
+
+/* --- Peligro / refugio --- */
+.safe-tag { display: inline-block; padding: 2px 8px; border-radius: 6px; font-size: 12px; font-weight: 800; letter-spacing: .5px; }
+.safe-tag.exposed { background: #7a2020; color: #ffd9d9; }
+.safe-tag.safe { background: #1f6b2f; color: #d6ffd9; }
+
+.danger-banner { position: absolute; top: 120px; left: 50%; transform: translateX(-50%); background: rgba(120,20,20,.85); border: 1px solid #ff6b5e; color: #ffe3df; padding: 10px 22px; border-radius: 10px; font-size: 18px; display: none; box-shadow: 0 6px 30px rgba(0,0,0,.6); }
+.danger-banner.show { display: block; animation: dangerPulse 1s ease-in-out infinite; }
+.danger-banner.active { background: rgba(160,20,20,.92); }
+@keyframes dangerPulse { 0%,100% { transform: translateX(-50%) scale(1); } 50% { transform: translateX(-50%) scale(1.05); } }
+
+/* Viñeta roja pulsante cuando hay amenaza activa. */
+.hud.danger::after { content: ''; position: fixed; inset: 0; pointer-events: none; box-shadow: inset 0 0 160px 40px rgba(150,0,0,.35); animation: vignette 1.4s ease-in-out infinite; }
+@keyframes vignette { 0%,100% { opacity: .5; } 50% { opacity: 1; } }
+
+/* --- Hora del día y clima --- */
+.env-status { position: absolute; top: 62px; left: 50%; transform: translateX(-50%); display: flex; gap: 10px; }
+.env-status span { background: rgba(0,0,0,.5); padding: 5px 12px; border-radius: 8px; font-size: 13px; border: 1px solid rgba(255,255,255,.12); }
+.hud.storming .env-status .weather { border-color: #6aa0ff; box-shadow: 0 0 12px rgba(80,140,255,.4); }
+
+/* --- Botón y panel de ayuda --- */
+.help-btn { position: absolute; left: 20px; bottom: 92px; pointer-events: auto; background: rgba(0,0,0,.55); color: #f0eadb; border: 1px solid rgba(255,255,255,.2); padding: 8px 14px; border-radius: 8px; cursor: pointer; font-size: 14px; }
+.help-btn:hover { border-color: #7dc46b; }
+
+.help-panel { position: fixed; inset: 0; background: rgba(0,0,0,.72); display: none; align-items: center; justify-content: center; z-index: 30; pointer-events: auto; }
+.help-panel.show { display: flex; }
+.help-card { background: #16211a; border: 1px solid rgba(125,196,107,.4); border-radius: 16px; padding: 28px 34px; max-width: 760px; width: 92%; box-shadow: 0 20px 60px rgba(0,0,0,.7); }
+.help-card h2 { font-size: 28px; margin-bottom: 16px; }
+.help-cols { display: flex; gap: 34px; }
+.help-cols > div { flex: 1; }
+.help-card h3 { font-size: 15px; color: #7dc46b; margin: 14px 0 6px; text-transform: uppercase; letter-spacing: .5px; }
+.help-card ul { list-style: none; display: flex; flex-direction: column; gap: 6px; }
+.help-card li { font-size: 14px; opacity: .92; }
+.help-card li b { display: inline-block; min-width: 74px; color: #f6d35b; }
+.help-tip { margin: 18px 0 16px; font-size: 13px; opacity: .8; line-height: 1.6; border-top: 1px solid rgba(255,255,255,.1); padding-top: 14px; }
+.help-close { display: block; margin: 0 auto; }
+@media (max-width: 600px) { .help-cols { flex-direction: column; gap: 6px; } }
+
+/* ===========================================================================
+   Controles táctiles (solo en móvil; se monta TouchControls)
+   ========================================================================== */
+.touch-ui { position: fixed; inset: 0; pointer-events: none; }
+
+/* Capa de arrastre de cámara: ocupa todo pero por DEBAJO de los controles. */
+.touch-cam { position: absolute; inset: 0; pointer-events: auto; touch-action: none; z-index: 1; }
+
+/* Los controles y el HUD interactivo van por ENCIMA de la capa de cámara. */
+.touch-joystick, .touch-buttons, .touch-build { z-index: 10; }
+body.touch .build-menu { z-index: 12; bottom: 150px; }
+body.touch .help-btn { z-index: 12; }
+body.touch .inventory .clickable { z-index: 12; position: relative; }
+
+/* Joystick izquierdo. */
+.touch-joystick {
+  position: absolute; left: 26px; bottom: 30px; width: 150px; height: 150px;
+  border-radius: 50%; background: rgba(255,255,255,.10); border: 2px solid rgba(255,255,255,.28);
+  pointer-events: auto; touch-action: none; display: flex; align-items: center; justify-content: center;
+}
+.touch-knob {
+  width: 62px; height: 62px; border-radius: 50%;
+  background: rgba(255,255,255,.32); border: 2px solid rgba(255,255,255,.5);
+}
+
+/* Botones derechos. */
+.touch-buttons {
+  position: absolute; right: 20px; bottom: 26px; width: 220px;
+  display: flex; flex-wrap: wrap-reverse; justify-content: flex-end; gap: 12px; pointer-events: none;
+}
+.tbtn {
+  pointer-events: auto; touch-action: none; -webkit-tap-highlight-color: transparent;
+  width: 66px; height: 66px; border-radius: 50%; font-size: 26px;
+  background: rgba(20,30,22,.42); color: #fff; border: 2px solid rgba(255,255,255,.35);
+  display: flex; align-items: center; justify-content: center; cursor: pointer;
+  backdrop-filter: blur(2px);
+}
+.tbtn.pressed { background: rgba(125,196,107,.5); transform: scale(.94); }
+.tbtn-jump, .tbtn-interact { width: 84px; height: 84px; font-size: 34px; } /* principales, más grandes */
+.tbtn-door, .tbtn-repair, .tbtn-eat { width: 56px; height: 56px; font-size: 22px; }
+
+/* Barra de construcción móvil (rotar / confirmar / cerrar). */
+.touch-build {
+  position: absolute; left: 50%; bottom: 30px; transform: translateX(-50%);
+  display: none; gap: 16px; pointer-events: none;
+}
+.touch-build.show { display: flex; }
+.tbtn-confirm { background: rgba(60,150,70,.55); }
+.tbtn-close { background: rgba(150,50,50,.5); }
+/* En construcción ocultamos saltar/interactuar para no estorbar al colocar. */
+.touch-ui.building .tbtn-jump, .touch-ui.building .tbtn-interact { display: none; }
+
+/* En móvil ocultamos la pista de teclado. */
+body.touch .hint { display: none; }
+body.touch .crosshair { opacity: .4; }
+
+/* --- Botones superiores (misiones/ayuda) --- */
+.top-btns { position: absolute; left: 20px; bottom: 92px; display: flex; flex-direction: column; gap: 8px; align-items: flex-start; }
+.top-btns .help-btn { position: static; }
+
+/* --- Panel de misiones --- */
+.missions-panel, .chest-panel { position: fixed; inset: 0; background: rgba(0,0,0,.72); display: none; align-items: center; justify-content: center; z-index: 31; pointer-events: auto; }
+.missions-panel.show, .chest-panel.show { display: flex; }
+.missions-card, .chest-card { background: #16211a; border: 1px solid rgba(246,211,91,.4); border-radius: 16px; padding: 26px 30px; max-width: 620px; width: 92%; box-shadow: 0 20px 60px rgba(0,0,0,.7); }
+.missions-card h2, .chest-card h2 { font-size: 26px; margin-bottom: 16px; }
+.missions-list { display: flex; flex-direction: column; gap: 12px; margin-bottom: 18px; max-height: 60vh; overflow-y: auto; }
+.mission { background: rgba(0,0,0,.35); border: 1px solid rgba(255,255,255,.1); border-radius: 10px; padding: 10px 14px; }
+.mission.done { border-color: #7dc46b; background: rgba(125,196,107,.14); }
+.m-title { font-size: 15px; margin-bottom: 6px; }
+.m-bar { height: 8px; background: rgba(255,255,255,.12); border-radius: 5px; overflow: hidden; }
+.m-fill { height: 100%; background: linear-gradient(90deg, #e0a53c, #f6d35b); transition: width .3s; }
+.m-meta { display: flex; justify-content: space-between; font-size: 12px; opacity: .85; margin-top: 5px; }
+.m-reward { color: #f6d35b; }
+.missions-close, .chest-close { display: block; margin: 0 auto; }
+
+/* Destello dorado al completar un reto. */
+.hud.challenge-flash::before { content: ''; position: fixed; inset: 0; pointer-events: none; box-shadow: inset 0 0 200px 60px rgba(246,211,91,.4); animation: cflash .9s ease; }
+@keyframes cflash { 0% { opacity: 0; } 30% { opacity: 1; } 100% { opacity: 0; } }
+
+/* --- Panel de cofre --- */
+.chest-cols { display: flex; gap: 24px; margin-bottom: 18px; }
+.chest-cols > div { flex: 1; }
+.chest-card h3 { font-size: 14px; color: #7dc46b; margin-bottom: 8px; }
+.chest-you, .chest-store { display: flex; flex-direction: column; gap: 5px; }
+.c-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; background: rgba(0,0,0,.3); padding: 4px 10px; border-radius: 7px; font-size: 14px; }
+.c-row button { background: rgba(125,196,107,.3); border: 1px solid rgba(125,196,107,.5); color: #fff; border-radius: 6px; padding: 2px 10px; cursor: pointer; }
+.c-row button:disabled { opacity: .3; cursor: default; }
+.chest-actions { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+.chest-actions .btn { padding: 10px 20px; font-size: 15px; }
+
+/* --- Día, guardado, pausa --- */
+.env-status .daynum b { color: #f6d35b; }
+.save-flash { position: absolute; right: 20px; bottom: 20px; background: rgba(0,0,0,.6); border: 1px solid #7dc46b; color: #d6ffd9; padding: 8px 14px; border-radius: 8px; font-size: 13px; opacity: 0; transition: opacity .25s; }
+.save-flash.show { opacity: 1; }
+
+.pause-panel { position: fixed; inset: 0; background: rgba(0,0,0,.78); display: none; align-items: center; justify-content: center; z-index: 40; pointer-events: auto; backdrop-filter: blur(3px); }
+.pause-panel.show { display: flex; }
+.pause-card { background: #16211a; border: 1px solid rgba(125,196,107,.4); border-radius: 16px; padding: 32px 40px; text-align: center; box-shadow: 0 20px 60px rgba(0,0,0,.7); }
+.pause-card h2 { font-size: 34px; margin-bottom: 20px; }
+.pause-card .records { justify-content: center; margin-bottom: 18px; }
+.pause-hint { font-size: 13px; opacity: .75; margin-bottom: 20px; }
+.pause-btns { display: flex; flex-direction: column; gap: 12px; align-items: center; }
+.pause-btns .btn { width: 260px; }
+
+/* El botón de misiones/pausa/ayuda comparte estilo .help-btn (ya definido). */

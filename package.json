@@ -1,0 +1,17 @@
+{
+  "name": "refugio-en-el-bosque",
+  "version": "0.1.0",
+  "description": "Refugio en el Bosque - juego 3D de supervivencia infinito en tercera persona (MVP)",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "three": "^0.169.0"
+  },
+  "devDependencies": {
+    "vite": "^5.4.0"
+  }
+}
