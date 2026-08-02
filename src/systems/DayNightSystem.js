@@ -32,7 +32,11 @@ export class DayNightSystem {
   update(dt, playerPos) {
     const cfg = CONFIG.dayNight;
     const prevT = this.t;
-    this.t = (this.t + dt / cfg.cycleSeconds) % 1;
+    // La noche avanza más rápido (dura la mitad): si el sol está bajo el
+    // horizonte en el instante actual, aplicamos el multiplicador de noche.
+    const elevNow = Math.sin(this.t * Math.PI * 2);
+    const speed = elevNow < 0 ? (cfg.nightSpeedMul || 1) : 1;
+    this.t = (this.t + (dt / cfg.cycleSeconds) * speed) % 1;
     if (this.t < prevT) { this.day = (this.day || 0) + 1; bus.emit(EVENTS.DAY_PASSED, { day: this.day }); }
     const a = this.t * Math.PI * 2;
 

@@ -28,16 +28,16 @@ export class GatheringSystem {
   _resolveTarget(pos) {
     const reach = CONFIG.player.reach;
     const tree = this.world.findChoppableTree(pos, reach);
-    if (tree) return { kind: 'tree', target: tree, prompt: 'Talar árbol (E / clic)' };
+    if (tree) return { kind: 'tree', target: tree, prompt: '🪓 Mantén E o CLIC para talar · ESPACIO para trepar' };
     const rock = this.world.findRock(pos, reach);
-    if (rock) return { kind: 'rock', target: rock, prompt: 'Picar roca → piedra (E)' };
+    if (rock) return { kind: 'rock', target: rock, prompt: '⛏️ Mantén E o CLIC para picar (piedra)' };
     const apple = this.world.findAppleTree(pos, reach);
-    if (apple) return { kind: 'apple', target: apple, prompt: 'Recoger manzanas (E)' };
+    if (apple) return { kind: 'apple', target: apple, prompt: '🍎 Pulsa E para recoger manzanas' };
     const mush = this.world.findMushroom(pos, reach);
-    if (mush) return { kind: 'mushroom', target: mush, prompt: 'Recoger hongo (E)' };
+    if (mush) return { kind: 'mushroom', target: mush, prompt: '🍄 Pulsa E para recoger hongo' };
     const bush = this.world.findBush(pos, reach);
-    if (bush) return { kind: 'bush', target: bush, prompt: bush.bush.kind === 'berry' ? 'Recoger bayas (E)' : 'Recoger hojas (E)' };
-    if (this.world.isNearRiver(pos)) return { kind: 'fish', target: null, prompt: 'Pescar (E)' };
+    if (bush) return { kind: 'bush', target: bush, prompt: bush.bush.kind === 'berry' ? '🫐 Pulsa E para recoger bayas' : '🍃 Pulsa E para recoger hojas' };
+    if (this.world.isNearRiver(pos)) return { kind: 'fish', target: null, prompt: '🎣 Pulsa E para pescar' };
     return null;
   }
 

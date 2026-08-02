@@ -36,6 +36,59 @@ export class HUD {
     this._chest = null;
     this._build();
     this._wireEvents();
+    this._initTutorial();
+  }
+
+  setRunning(on) { this.runIndicator.classList.toggle('show', on); }
+
+  // --- Tutorial guiado (aparece en partida nueva; se puede saltar) ---
+  _initTutorial() {
+    let done = false;
+    try { done = localStorage.getItem('refugio_tutorial_done') === '1'; } catch {}
+    // Pasos: cada uno avanza con un evento del juego.
+    this._tutSteps = [
+      { text: '👋 Muévete con WASD o las flechas ← ↑ → ↓ y acércate a un árbol.' },
+      { text: '🪓 Mantén CLIC izquierdo (o la tecla E) junto al árbol para talarlo.' },
+      { text: '🔨 Pulsa B para abrir el menú de construcción.' },
+      { text: '🧱 Elige una pieza con las teclas 1–9 y haz CLIC en el suelo para colocarla.' },
+      { text: '✅ ¡Listo! Come con Q, trepa árboles con Espacio y pulsa H para ver todos los controles.' },
+    ];
+    this._tutIndex = 0;
+    if (done) { this.tutorialEl.classList.remove('show'); return; }
+
+    this._showTutStep(0);
+    // Avances por evento.
+    bus.on('gather:prompt', (t) => { if (this._tutIndex === 0 && t && t.includes('talar')) this._advanceTut(0); });
+    bus.on(EVENTS.TREE_FELLED, () => this._advanceTut(1));
+    bus.on(EVENTS.BUILD_MODE_CHANGED, (a) => { if (a) this._advanceTut(2); });
+    bus.on(EVENTS.BUILD_PLACED, () => this._advanceTut(3));
+  }
+
+  _showTutStep(i) {
+    if (i >= this._tutSteps.length) { this._endTutorial(); return; }
+    this._tutIndex = i;
+    this.tutTextEl.textContent = this._tutSteps[i].text;
+    this.tutorialEl.classList.add('show');
+  }
+
+  _advanceTut(fromStep) {
+    if (this._tutIndex !== fromStep) return; // solo avanza el paso actual
+    const next = fromStep + 1;
+    if (next >= this._tutSteps.length) {
+      this._showTutStep(next); // muestra el último
+      setTimeout(() => this._endTutorial(), 7000);
+    } else if (next === this._tutSteps.length - 1) {
+      this._showTutStep(next);
+      setTimeout(() => this._endTutorial(), 8000);
+    } else {
+      this._showTutStep(next);
+    }
+  }
+
+  _endTutorial() {
+    this.tutorialEl.classList.remove('show');
+    this._tutIndex = 99;
+    try { localStorage.setItem('refugio_tutorial_done', '1'); } catch {}
   }
 
   _build() {
@@ -59,6 +112,12 @@ export class HUD {
       </div>
 
       <div class="save-flash">💾 Guardado</div>
+      <div class="run-indicator">💨 Corriendo</div>
+
+      <div class="tutorial">
+        <span class="tut-text"></span>
+        <button class="tut-skip clickable">Saltar tutorial ✕</button>
+      </div>
 
       <div class="danger-banner">⚠️ <b>¡PELIGRO!</b> El oso viene — corre a un refugio válido</div>
 
@@ -188,6 +247,10 @@ export class HUD {
     this.dayEl = this.el.querySelector('.env-status .daynum b');
     this.saveFlash = this.el.querySelector('.save-flash');
     this.pausePanel = this.el.querySelector('.pause-panel');
+    this.runIndicator = this.el.querySelector('.run-indicator');
+    this.tutorialEl = this.el.querySelector('.tutorial');
+    this.tutTextEl = this.el.querySelector('.tut-text');
+    this.el.querySelector('.tut-skip').addEventListener('click', () => this._endTutorial());
 
     this.el.querySelector('[data-help]').addEventListener('click', () => this.toggleHelp());
     this.el.querySelector('.help-close').addEventListener('click', () => this.toggleHelp());

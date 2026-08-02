@@ -83,6 +83,8 @@ export const CONFIG = {
   // Materiales de construcción + comidas. Todos van al inventario.
   resources: ['wood', 'leaves', 'fiber', 'stone', 'apples', 'berries', 'mushrooms', 'fish'],
   foodItems: ['apples', 'berries', 'mushrooms', 'fish'],
+  // Inventario inicial (para poder construir de inmediato en partida nueva).
+  startingInventory: { wood: 60, leaves: 25, fiber: 15, stone: 15, apples: 5, berries: 5 },
 
   // --- Recolección (rendimientos — ver balance de economía abajo) ---
   gathering: {
@@ -184,6 +186,7 @@ export const CONFIG = {
   // --- Ciclo día/noche ---
   dayNight: {
     cycleSeconds: 300,         // duración de un día completo (día+noche)
+    nightSpeedMul: 2.0,        // la noche pasa 2x más rápido (dura la mitad)
     startT: 0.28,             // arranca por la mañana (0=amanecer,0.5=atardecer)
     // Colores/intensidades interpolados según elevación del sol.
     dayFogColor: 0xbcd0cf,

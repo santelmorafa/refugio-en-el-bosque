@@ -119,6 +119,10 @@ export class Game {
     } else {
       this.intro.start();
       this.survival.reset();
+      // Inventario inicial para poder construir desde el principio.
+      for (const [k, v] of Object.entries(CONFIG.startingInventory || {})) {
+        if (k in this.inventory.items) this.inventory.items[k] += v;
+      }
       bus.emit(EVENTS.INVENTORY_CHANGED, this.inventory.snapshot());
     }
 
@@ -396,6 +400,16 @@ export class Game {
           this._stepTimer = pstate.running ? 0.3 : 0.46;
           bus.emit(EVENTS.STEP, { surface: this._surfaceUnder() });
         }
+      }
+
+      // Feedback de CORRER (Shift): la cámara "empuja" (FOV) y aviso en el HUD.
+      const cam = this.cameraSys.camera;
+      const targetFov = CONFIG.camera.fov + (pstate.running ? 9 : 0);
+      cam.fov += (targetFov - cam.fov) * Math.min(1, dt * 8);
+      cam.updateProjectionMatrix();
+      if (pstate.running !== this._wasRunning) {
+        this._wasRunning = pstate.running;
+        this.hud.setRunning(pstate.running);
       }
 
       // Guardado automático periódico.

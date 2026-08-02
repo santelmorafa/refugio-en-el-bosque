@@ -68,6 +68,8 @@ export class InputSystem {
 
   _onKey(e, down) {
     const code = e.code;
+    // Evita que Espacio/flechas hagan scroll o activen botones enfocados.
+    if (code === 'Space' || code.startsWith('Arrow')) e.preventDefault();
     if (down) this.keys.add(code); else this.keys.delete(code);
 
     // Acciones de pulsación única (edge-triggered) se marcan aquí.
@@ -85,8 +87,11 @@ export class InputSystem {
       if (code === 'BracketLeft' || code === 'Minus') this._pressed = { ...(this._pressed || {}), levelDown: true };
       if (code === 'Space') this._pressed = { ...(this._pressed || {}), jumpEdge: true };
       if (code === 'Escape') this._pressed = { ...(this._pressed || {}), escape: true };
-      if (code.startsWith('Digit')) {
+      // Selección de pieza por número: fila superior (Digit) o teclado numérico (Numpad).
+      if (/^Digit[1-9]$/.test(code)) {
         this._pressed = { ...(this._pressed || {}), digit: parseInt(code.slice(5), 10) };
+      } else if (/^Numpad[1-9]$/.test(code)) {
+        this._pressed = { ...(this._pressed || {}), digit: parseInt(code.slice(6), 10) };
       }
     }
   }
@@ -97,10 +102,11 @@ export class InputSystem {
     const k = this.keys;
     const a = this.actions;
     const t = this.touch;
-    a.forward = (k.has('KeyW') ? 1 : 0) - (k.has('KeyS') ? 1 : 0) + t.moveY;
-    a.right = (k.has('KeyD') ? 1 : 0) - (k.has('KeyA') ? 1 : 0) + t.moveX;
-    a.forward = Math.max(-1, Math.min(1, a.forward));
-    a.right = Math.max(-1, Math.min(1, a.right));
+    // Movimiento con WASD o con las FLECHAS del teclado.
+    const fwd = (k.has('KeyW') || k.has('ArrowUp') ? 1 : 0) - (k.has('KeyS') || k.has('ArrowDown') ? 1 : 0);
+    const rgt = (k.has('KeyD') || k.has('ArrowRight') ? 1 : 0) - (k.has('KeyA') || k.has('ArrowLeft') ? 1 : 0);
+    a.forward = Math.max(-1, Math.min(1, fwd + t.moveY));
+    a.right = Math.max(-1, Math.min(1, rgt + t.moveX));
     a.run = k.has('ShiftLeft') || k.has('ShiftRight') || t.run;
     a.jump = k.has('Space') || t.jump;
     a.interactHold = this.buttons.left || k.has('KeyE') || t.interactHold;

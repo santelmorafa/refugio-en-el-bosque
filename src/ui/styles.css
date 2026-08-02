@@ -83,8 +83,21 @@ body { font-family: 'Segoe UI', system-ui, sans-serif; color: #f0eadb; user-sele
 .shelter { position: absolute; right: 20px; bottom: 20px; background: rgba(0,0,0,.5); padding: 10px 16px; border-radius: 10px; font-size: 14px; border: 1px solid rgba(255,255,255,.12); text-align: right; }
 .shelter .lvl { font-size: 22px; font-weight: 800; color: #7dc46b; }
 
-.prompt { position: absolute; left: 50%; bottom: 130px; transform: translateX(-50%); background: rgba(0,0,0,.6); padding: 10px 18px; border-radius: 10px; font-size: 16px; opacity: 0; transition: opacity .15s; }
-.prompt.show { opacity: 1; }
+.prompt { position: absolute; left: 50%; bottom: 130px; transform: translateX(-50%); background: rgba(10,20,12,.82); padding: 12px 22px; border-radius: 12px; font-size: 19px; font-weight: 600; border: 1px solid rgba(125,196,107,.55); box-shadow: 0 6px 24px rgba(0,0,0,.5); opacity: 0; transition: opacity .15s; white-space: nowrap; }
+.prompt.show { opacity: 1; animation: promptPulse 1.6s ease-in-out infinite; }
+@keyframes promptPulse { 0%,100% { border-color: rgba(125,196,107,.55); } 50% { border-color: rgba(125,196,107,1); } }
+
+/* --- Indicador de correr (Shift) --- */
+.run-indicator { position: absolute; left: 50%; bottom: 176px; transform: translateX(-50%); background: rgba(246,211,91,.22); border: 1px solid #f6d35b; color: #ffe9a8; padding: 5px 14px; border-radius: 20px; font-size: 14px; font-weight: 700; opacity: 0; transition: opacity .15s; }
+.run-indicator.show { opacity: 1; }
+
+/* --- Tutorial guiado --- */
+.tutorial { position: absolute; top: 104px; left: 50%; transform: translateX(-50%); max-width: 620px; width: 92%; background: rgba(20,33,26,.94); border: 2px solid #7dc46b; border-radius: 12px; padding: 14px 18px; display: none; align-items: center; gap: 14px; box-shadow: 0 10px 40px rgba(0,0,0,.6); pointer-events: auto; }
+.tutorial.show { display: flex; animation: tutIn .3s ease; }
+@keyframes tutIn { from { transform: translateX(-50%) translateY(-8px); opacity: 0; } to { transform: translateX(-50%) translateY(0); opacity: 1; } }
+.tut-text { flex: 1; font-size: 16px; line-height: 1.4; }
+.tut-skip { background: rgba(255,255,255,.12); color: #f0eadb; border: 1px solid rgba(255,255,255,.2); border-radius: 8px; padding: 6px 12px; font-size: 12px; cursor: pointer; white-space: nowrap; }
+.tut-skip:hover { border-color: #ff6b5e; }
 
 .crosshair { position: absolute; left: 50%; top: 50%; width: 6px; height: 6px; margin: -3px 0 0 -3px; border-radius: 50%; background: rgba(255,255,255,.7); box-shadow: 0 0 4px #000; }
 

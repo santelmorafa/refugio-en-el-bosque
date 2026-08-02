@@ -2,9 +2,10 @@
 
 Juego 3D de **supervivencia infinita en tercera persona** para navegador.
 Vives en una cabaña en el bosque, un oso gigante la destruye, y reconstruyes tu
-refugio con **construcción libre** mientras sobrevives al hambre. Este es el
-**MVP**: sin IA del oso en juego, sin ciclo día/noche, sin clima, sin controles
-móviles — pero con la **arquitectura preparada** para añadirlos.
+refugio con **construcción libre** mientras sobrevives al hambre, al oso, a la
+noche y a las tormentas. Incluye ciclo día/noche, clima, IA del oso con mecánica
+de refugio, comida/recursos, retos, controles táctiles, audio y efectos, menú de
+inicio, récords, pausa, **tutorial guiado** y **guardado automático**.
 
 Hecho con **Three.js + Vite**, JavaScript modular (ES modules).
 
@@ -31,14 +32,14 @@ npm run preview
 ### Controles
 | Acción | Tecla |
 |---|---|
-| Mover | **WASD** |
-| Correr | **Shift** |
+| Mover | **WASD** o **flechas ← ↑ → ↓** |
+| Correr | **Shift** (se nota: la cámara "empuja" y aparece 💨) |
 | Saltar / **Trepar árbol** (cerca de un tronco) | **Espacio** |
 | Orbitar cámara | **Ratón** (clic para capturar el puntero) |
-| Talar / recoger | **E** o **clic izquierdo** (mantener para talar) |
-| Comer manzana | **Q** (o clic en 🍎 del HUD) |
+| Talar / recoger / pescar | **E** o **clic izquierdo** (mantener para talar/picar) |
+| Comer | **Q** (o clic en una comida del HUD) |
 | Modo construcción | **B** |
-| Elegir pieza (en construcción) | **1–5** |
+| Elegir pieza (en construcción) | **1–9** (fila superior o teclado numérico) |
 | Rotar pieza | **R** |
 | Colocar pieza | **clic izquierdo** |
 | Salir de construcción | **B** o **Esc** |
