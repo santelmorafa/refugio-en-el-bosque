@@ -171,7 +171,8 @@ export class FaunaSystem {
 
     const toPlayer = new THREE.Vector3().subVectors(player, b.pos); toPlayer.y = 0;
     const dist = toPlayer.length();
-    const sheltered = this.building.isSheltered(player);
+    // A salvo si estás en un refugio válido O trepado en un árbol (temporal).
+    const sheltered = this.building.isSheltered(player) || !!this.player.inTreeRefuge;
 
     // Si el jugador se aleja muchísimo, el oso se rinde.
     if (dist > cfg.giveUpDistance && b.state !== BEAR.LEAVE) b.state = BEAR.LEAVE;

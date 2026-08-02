@@ -9,6 +9,7 @@
 import * as THREE from 'three';
 import { CONFIG } from '../config.js';
 import { damp } from '../utils/math.js';
+import { bus, EVENTS } from '../utils/EventBus.js';
 
 export class PlayerController {
   constructor(model, camera) {
@@ -33,6 +34,8 @@ export class PlayerController {
     this.climbTree = null;
     this.climbSide = { x: 1, z: 0 };
     this.climbBaseGroundY = 0;
+    this.climbTime = 0;                 // tiempo trepado (límite del refugio)
+    this.inTreeRefuge = false;          // arriba y a salvo del oso (temporal)
   }
 
   // Reproduce una animación puntual que bloquea el movimiento un instante.
@@ -136,6 +139,8 @@ export class PlayerController {
     this.velocity.set(0, 0, 0);
     this.onGround = false;
     this.climbBaseGroundY = this.groundY;
+    this.climbTime = 0;
+    this.inTreeRefuge = false;
     const dx = this.position.x - tree.x, dz = this.position.z - tree.z;
     const len = Math.hypot(dx, dz) || 1;
     this.climbSide = { x: dx / len, z: dz / len };
@@ -145,6 +150,14 @@ export class PlayerController {
   _updateClimb(dt, a, jumpEdge) {
     const tree = this.climbTree;
     if (!tree || jumpEdge) { this._exitClimb(false); return { moving: false, running: false }; }
+
+    // Aguante limitado: el árbol es un REFUGIO TEMPORAL. Al agotarse, resbalas.
+    this.climbTime += dt;
+    if (this.climbTime >= CONFIG.player.treeRefugeTime) {
+      bus.emit(EVENTS.TOAST, '🌳 ¡Te resbalas del árbol! No puedes aguantar más arriba.');
+      this._slipOff();
+      return { moving: false, running: false };
+    }
 
     // Abrazar el tronco por el lado por el que subiste.
     const off = tree.radius + CONFIG.player.radius;
@@ -158,6 +171,14 @@ export class PlayerController {
     if (this.position.y > topY) this.position.y = topY;
     if (this.position.y < this.groundY) this.position.y = this.groundY;
     this.velocity.set(0, 0, 0);
+
+    // Estás a salvo del oso si estás lo bastante alto (y aún te queda aguante).
+    const height = this.position.y - this.climbBaseGroundY;
+    this.inTreeRefuge = height >= CONFIG.player.treeMinHeight;
+    bus.emit(EVENTS.TREE_REFUGE, {
+      active: this.inTreeRefuge,
+      t01: 1 - this.climbTime / CONFIG.player.treeRefugeTime,
+    });
 
     // Llegar abajo bajando => soltarse.
     if (up < 0 && this.position.y <= this.groundY + 0.02) {
@@ -174,8 +195,20 @@ export class PlayerController {
     return { moving, running: false };
   }
 
+  // Resbalar: caes por el tronco hasta el suelo (quedas expuesto).
+  _slipOff() {
+    this.climbing = false;
+    this.climbTree = null;
+    this.inTreeRefuge = false;
+    this.velocity.set(0, -3, 0);
+    this.onGround = false;
+    this.model.setAction('idle');
+    bus.emit(EVENTS.TREE_REFUGE, { active: false, t01: 0 });
+  }
+
   _exitClimb(reachedGround) {
     this.climbing = false;
+    this.inTreeRefuge = false;
     const side = this.climbSide;
     this.climbTree = null;
     if (!reachedGround) {
@@ -186,6 +219,7 @@ export class PlayerController {
       this.onGround = false;
     }
     this.model.setAction('idle');
+    bus.emit(EVENTS.TREE_REFUGE, { active: false, t01: 0 });
   }
 
   _resolveCollisions(colliders) {

@@ -88,6 +88,7 @@ export const EVENTS = {
   CHEST_CHANGED: 'chest:changed',
   SPAWN_SET: 'player:spawnSet',       // fijaste reaparición en una cama
   BEAR_SURVIVED: 'bear:survived',     // sobreviviste a una amenaza de oso
+  TREE_REFUGE: 'player:treeRefuge',   // { active, t01 } trepado = refugio temporal
   // Retos / logros
   CHALLENGE_PROGRESS: 'challenge:progress',
   CHALLENGE_COMPLETE: 'challenge:complete',

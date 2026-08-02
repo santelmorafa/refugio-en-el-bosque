@@ -45,6 +45,8 @@ export const CONFIG = {
     stepUp: 0.65,             // altura que puede "escalonar" sin saltar (subir a piso)
     climbSpeed: 2.6,          // velocidad al trepar árboles
     climbReach: 1.6,          // distancia al tronco para poder trepar
+    treeRefugeTime: 9,        // s que aguantas en el árbol (refugio temporal)
+    treeMinHeight: 1.2,       // altura mínima sobre el suelo para estar a salvo
   },
 
   // --- Cámara tercera persona ---

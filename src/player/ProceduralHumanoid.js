@@ -29,6 +29,8 @@ export class ProceduralHumanoid {
 
     const skin = assets.material('skin').clone();
     const female = gender === 'female';
+    // Elena: tono de piel más CREMA (menos marrón).
+    if (female) skin.color.setHex(0xf0d6b8);
     const shirt = new THREE.MeshStandardMaterial({
       color: female ? 0xb0506a : 0x3a6b57, roughness: 0.85, // blusa granate vs camisa verde
     });

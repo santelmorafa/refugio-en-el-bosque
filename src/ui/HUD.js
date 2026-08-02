@@ -121,6 +121,7 @@ export class HUD {
 
       <div class="save-flash">💾 Guardado</div>
       <div class="run-indicator">💨 Corriendo</div>
+      <div class="grip">🌳 A salvo en el árbol · Aguante<div class="grip-bar"><div class="grip-fill"></div></div></div>
 
       <div class="tutorial">
         <span class="tut-text"></span>
@@ -262,6 +263,8 @@ export class HUD {
     this.saveFlash = this.el.querySelector('.save-flash');
     this.pausePanel = this.el.querySelector('.pause-panel');
     this.runIndicator = this.el.querySelector('.run-indicator');
+    this.gripEl = this.el.querySelector('.grip');
+    this.gripFill = this.el.querySelector('.grip-fill');
     this.tutorialEl = this.el.querySelector('.tutorial');
     this.tutTextEl = this.el.querySelector('.tut-text');
     this.el.querySelector('.tut-skip').addEventListener('click', () => this._endTutorial());
@@ -351,6 +354,16 @@ export class HUD {
     // Retos: actualizar fila si el panel está abierto.
     bus.on(EVENTS.CHALLENGE_PROGRESS, (p) => this._updateMissionRow(p));
     bus.on(EVENTS.CHALLENGE_COMPLETE, (c) => this._challengeToast(c));
+
+    // Refugio temporal en el árbol (aguante).
+    bus.on(EVENTS.TREE_REFUGE, ({ active, t01 }) => {
+      this.gripEl.classList.toggle('show', !!active);
+      if (active) {
+        const pct = Math.max(0, Math.min(1, t01)) * 100;
+        this.gripFill.style.width = `${pct}%`;
+        this.gripFill.classList.toggle('low', t01 < 0.3);
+      }
+    });
 
     // Día, pausa, guardado, récords.
     bus.on(EVENTS.DAY_PASSED, ({ day }) => { this.dayEl.textContent = day; });

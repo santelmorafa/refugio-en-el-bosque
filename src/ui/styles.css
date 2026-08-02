@@ -91,6 +91,14 @@ body { font-family: 'Segoe UI', system-ui, sans-serif; color: #f0eadb; user-sele
 .run-indicator { position: absolute; left: 50%; bottom: 176px; transform: translateX(-50%); background: rgba(246,211,91,.22); border: 1px solid #f6d35b; color: #ffe9a8; padding: 5px 14px; border-radius: 20px; font-size: 14px; font-weight: 700; opacity: 0; transition: opacity .15s; }
 .run-indicator.show { opacity: 1; }
 
+/* --- Aguante en el árbol (refugio temporal) --- */
+.grip { position: absolute; left: 50%; top: 96px; transform: translateX(-50%); display: none; flex-direction: column; align-items: center; gap: 5px; background: rgba(20,33,26,.9); border: 1px solid #7dc46b; border-radius: 12px; padding: 8px 16px; font-size: 14px; font-weight: 700; box-shadow: 0 6px 24px rgba(0,0,0,.5); }
+.grip.show { display: flex; }
+.grip-bar { width: 180px; height: 9px; background: rgba(255,255,255,.15); border-radius: 6px; overflow: hidden; }
+.grip-fill { height: 100%; width: 100%; background: linear-gradient(90deg, #7dc46b, #b6e88a); transition: width .1s linear; }
+.grip-fill.low { background: linear-gradient(90deg, #e0603c, #ff9a5e); animation: gripBlink .4s ease-in-out infinite; }
+@keyframes gripBlink { 0%,100% { opacity: 1; } 50% { opacity: .5; } }
+
 /* --- Tutorial guiado --- */
 .tutorial { position: absolute; top: 104px; left: 50%; transform: translateX(-50%); max-width: 620px; width: 92%; background: rgba(20,33,26,.94); border: 2px solid #7dc46b; border-radius: 12px; padding: 14px 18px; display: none; align-items: center; gap: 14px; box-shadow: 0 10px 40px rgba(0,0,0,.6); pointer-events: auto; }
 .tutorial.show { display: flex; animation: tutIn .3s ease; }
