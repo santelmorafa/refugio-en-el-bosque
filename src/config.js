@@ -170,6 +170,7 @@ export const CONFIG = {
       inventoryDropFraction: 0.25, // suelta 25% del inventario al golpearte
       scale: 1.6,              // OSO GIGANTE
       knockback: 6,            // empuje al golpearte
+      collisionRadius: 1.1,    // no atraviesa las paredes
       giveUpDistance: 90,      // si te alejas tantísimo, se rinde
     },
     critters: {

@@ -241,6 +241,9 @@ export class FaunaSystem {
       }
     }
 
+    // El oso NO atraviesa las paredes: lo empujamos fuera de los muros.
+    this.building.resolveCircle(b.pos, CONFIG.fauna.bear.collisionRadius, b.pos.y, 2.0);
+
     // Mantener al oso sobre el terreno + animar.
     b.pos.y = this.world.heightAt(b.pos.x, b.pos.z);
     this._bearModel.root.position.copy(b.pos);

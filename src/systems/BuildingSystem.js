@@ -458,6 +458,66 @@ export class BuildingSystem {
     return { hit: true, broke: false };
   }
 
+  // ¿La pieza es un muro SÓLIDO que bloquea el paso? (pared, ventana, cerca y
+  // puerta CERRADA). Puertas abiertas, pisos, techos y props no bloquean.
+  _isSolidWall(p) {
+    if (p.type === 'wall' || p.type === 'window' || p.type === 'fence') return true;
+    if (p.type === 'door' && !p.isOpen) return true;
+    return false;
+  }
+
+  // Colisión de un círculo (jugador/oso) contra los muros. Empuja `pos` (un
+  // Vector3) fuera de cualquier pared sólida. Devuelve true si empujó.
+  // feetY/height => solo choca si el cuerpo solapa la altura del muro (así en un
+  // techo no te frenan las paredes de abajo).
+  resolveCircle(pos, radius, feetY, height) {
+    const g = CONFIG.building.gridSnap;
+    let pushed = false;
+    for (const p of this.placed) {
+      if (!this._isSolidWall(p)) continue;
+      const dx0 = pos.x - p.position.x, dz0 = pos.z - p.position.z;
+      if (Math.abs(dx0) > 3 && Math.abs(dz0) > 3) continue; // descarte rápido
+
+      // Solape vertical (el muro ocupa [pos.y ± halfH]).
+      const halfH = (p.type === 'fence') ? g * 0.3 : g * 0.5;
+      const wallTop = p.position.y + halfH, wallBottom = p.position.y - halfH;
+      if (feetY > wallTop - 0.05 || feetY + height < wallBottom + 0.05) continue;
+
+      // Semiejes del muro en su marco local (ancho g, grosor fino).
+      let hx = g / 2, hz = 0.09;
+      if (p.type === 'door') { hx = g * 0.45; hz = 0.08; }
+      else if (p.type === 'fence') { hx = g / 2; hz = 0.06; }
+
+      // Lleva el círculo al marco local del muro (rotación inversa).
+      const c = Math.cos(-p.rotationY), s = Math.sin(-p.rotationY);
+      const lx = dx0 * c - dz0 * s;
+      const lz = dx0 * s + dz0 * c;
+
+      // Punto más cercano del rectángulo al centro del círculo.
+      const cx = Math.max(-hx, Math.min(hx, lx));
+      const cz = Math.max(-hz, Math.min(hz, lz));
+      const ddx = lx - cx, ddz = lz - cz;
+      const d2 = ddx * ddx + ddz * ddz;
+      if (d2 >= radius * radius) continue;
+
+      let nx, nz, pen;
+      if (d2 > 1e-8) {
+        const d = Math.sqrt(d2); nx = ddx / d; nz = ddz / d; pen = radius - d;
+      } else {
+        // Centro dentro del muro: salir por el eje más corto.
+        const ox = hx - Math.abs(lx), oz = hz - Math.abs(lz);
+        if (ox < oz) { nx = Math.sign(lx) || 1; nz = 0; pen = ox + radius; }
+        else { nx = 0; nz = Math.sign(lz) || 1; pen = oz + radius; }
+      }
+      // Normal de vuelta al mundo (rotación directa).
+      const wc = Math.cos(p.rotationY), ws = Math.sin(p.rotationY);
+      pos.x += (nx * wc - nz * ws) * pen;
+      pos.z += (nx * ws + nz * wc) * pen;
+      pushed = true;
+    }
+    return pushed;
+  }
+
   _removePiece(p) {
     this.scene.remove(p.mesh);
     if (p.mesh.material && p.mesh.material.dispose && p.mesh.material !== this._solidMaterial(p.type)) {

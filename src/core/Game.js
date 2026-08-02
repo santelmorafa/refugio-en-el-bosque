@@ -387,6 +387,10 @@ export class Game {
 
     const colliders = this.world.getNearbyColliders(this.player.position);
     const pstate = this.player.update(dt, this.input, colliders);
+    // Colisión contra las paredes construidas (no atravesar la casa).
+    if (!this.player.climbing) {
+      this.building.resolveCircle(this.player.position, CONFIG.player.radius, this.player.position.y, CONFIG.player.height);
+    }
 
     // --- Cámara sigue al jugador con colisión ---
     const camColliders = this.world.getCameraColliders();
