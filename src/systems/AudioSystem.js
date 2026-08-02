@@ -36,6 +36,26 @@ export class AudioSystem {
     if (this.ctx && this.ctx.state === 'suspended') this.ctx.resume();
   }
 
+  // Suspende TODO el audio (pausa / pestaña oculta). Reversible con resume().
+  suspend() {
+    if (this.ctx && this.ctx.state === 'running') { try { this.ctx.suspend(); } catch {} }
+  }
+
+  // Cierra el contexto por completo (al cerrar/descargar la pestaña).
+  shutdown() {
+    try { this.stopNight(); } catch {}
+    try { this.stopDay(); } catch {}
+    try { this.stopTension(); } catch {}
+    try { this.stopRainWind(); } catch {}
+    try { this.stopMusic(); } catch {}
+    if (this.ctx) { try { this.ctx.close(); } catch {} }
+    this.ctx = null; this.master = null;
+    this.night = this.day = this.tension = this.storm = this.music = null;
+  }
+
+  // ¿El contexto está activo? (para no encolar sonidos mientras está suspendido)
+  _running() { return this.ctx && this.ctx.state === 'running'; }
+
   _wire() {
     bus.on(EVENTS.TENSION_START, () => { this.startTension(); this.setMusicDanger(1); });
     bus.on(EVENTS.TENSION_STOP, () => { this.stopTension(); this.setMusicDanger(0); });
@@ -108,7 +128,7 @@ export class AudioSystem {
   }
 
   _owlHoot() {
-    if (!this.ctx) return;
+    if (!this._running()) return;
     const t = this.ctx.currentTime;
     // "uh-huu": dos notas graves.
     [[0, 380], [0.35, 340]].forEach(([off, f]) => {
@@ -201,7 +221,7 @@ export class AudioSystem {
 
   // Golpe grave (latido / puñetazo de pared).
   _pulse(freq, dur, vol) {
-    if (!this.ctx) return;
+    if (!this._running()) return;
     const t = this.ctx.currentTime;
     const o = this.ctx.createOscillator();
     const g = this.ctx.createGain();
@@ -348,7 +368,7 @@ export class AudioSystem {
     this.day = null;
   }
   _chirp() {
-    if (!this.ctx) return;
+    if (!this._running()) return;
     const t = this.ctx.currentTime;
     const notes = 2 + Math.floor(Math.random() * 3);
     for (let i = 0; i < notes; i++) {

@@ -178,9 +178,16 @@ export class Game {
       SaveSystem.updateRecords({ pieces: this.building.placed.length });
       this._emitRecords();
     });
-    // Guardar al ocultar/cerrar la pestaña.
-    window.addEventListener('visibilitychange', () => { if (document.hidden) this._autosave(); });
-    window.addEventListener('beforeunload', () => this._autosave());
+    // Al ocultar la pestaña: guardar + SUSPENDER el audio (no debe seguir
+    // sonando en segundo plano). Al volver a verla, reanudar si se está jugando.
+    window.addEventListener('visibilitychange', () => {
+      if (document.hidden) { this._autosave(); this.audio.suspend(); }
+      else if (this.state === GAME_STATE.PLAYING) { this.audio.resume(); }
+    });
+    // Al cerrar/descargar/ocultar definitivamente: guardar y CERRAR el audio.
+    const onLeave = () => { this._autosave(); this.audio.shutdown(); };
+    window.addEventListener('pagehide', onLeave);
+    window.addEventListener('beforeunload', onLeave);
   }
 
   _emitRecords() {
@@ -231,9 +238,11 @@ export class Game {
       this._prePauseState = GAME_STATE.PLAYING;
       this.state = GAME_STATE.PAUSED;
       this._autosave();
+      this.audio.suspend();               // silencia TODO el audio en pausa
       bus.emit(EVENTS.PAUSED_CHANGED, true);
     } else if (this.state === GAME_STATE.PAUSED) {
       this.state = GAME_STATE.PLAYING;
+      this.audio.resume();                // reanuda el audio
       bus.emit(EVENTS.PAUSED_CHANGED, false);
     }
   }
