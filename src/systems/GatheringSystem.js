@@ -96,43 +96,50 @@ export class GatheringSystem {
 
   _fellTree(tree) {
     tree.felled = true;
-    // Oculta las instancias (tronco + copa comparten posición; se reemplaza
-    // por un tronco físico que cae).
-    if (tree._instance) this.world.hideInstance(tree._instance);
+    // Oculta TODAS las instancias del árbol (tronco + copa + manzanas).
+    if (tree._instances) for (const inst of tree._instances) this.world.hideInstance(inst);
+    else if (tree._instance) this.world.hideInstance(tree._instance);
 
-    // Crea un tronco visible que cae con rotación (física simple).
-    const geo = new THREE.CylinderGeometry(0.25, 0.32, 4, 8);
-    geo.translate(0, 2, 0);
-    const log = new THREE.Mesh(geo, this.world.assets.material('bark'));
-    log.position.set(tree.x, 0, tree.z);
-    log.castShadow = true;
-    this.scene.add(log);
+    // El árbol ENTERO (tronco + copa) se derrumba girando desde la base.
+    const treeMesh = this.world.factory.buildFallingTree(tree);
+    this.scene.add(treeMesh);
 
     const dir = Math.random() * Math.PI * 2;
     this._fallingLogs.push({
-      mesh: log, tree,
+      mesh: treeMesh, tree, baseScale: tree.scale,
       axis: new THREE.Vector3(Math.cos(dir), 0, Math.sin(dir)),
-      angle: 0, speed: 0, done: false,
+      angle: 0, speed: 0, done: false, deadTimer: 6,
     });
 
     bus.emit(EVENTS.TREE_FELLED, { x: tree.x, z: tree.z });
-    bus.emit(EVENTS.TOAST, '¡Árbol talado!');
+    bus.emit(EVENTS.TOAST, '¡Árbol talado! 🪵');
   }
 
   _updateFallingLogs(dt) {
-    for (const l of this._fallingLogs) {
-      if (l.done) continue;
-      l.speed += dt * 3.5;
-      l.angle = Math.min(Math.PI / 2, l.angle + l.speed * dt);
-      l.mesh.rotation.set(0, 0, 0);
-      l.mesh.rotateOnAxis(l.axis, l.angle);
-      if (l.angle >= Math.PI / 2) {
-        l.done = true;
-        // Convertir en troncos recogibles => dar madera directamente.
-        this.inventory.add('wood', CONFIG.gathering.woodPerTree);
-        bus.emit(EVENTS.TOAST, `+${CONFIG.gathering.woodPerTree} madera`);
-        // Deja el tronco caído en el suelo como decoración (troncos caídos).
-        setTimeout(() => {}, 0);
+    for (let i = this._fallingLogs.length - 1; i >= 0; i--) {
+      const l = this._fallingLogs[i];
+      if (!l.done) {
+        // Se derrumba: acelera y gira desde la base hasta quedar tumbado.
+        l.speed += dt * 3.2;
+        l.angle = Math.min(Math.PI / 2, l.angle + l.speed * dt);
+        l.mesh.rotation.set(0, 0, 0);
+        l.mesh.rotateOnAxis(l.axis, l.angle);
+        if (l.angle >= Math.PI / 2) {
+          l.done = true;
+          this.inventory.add('wood', CONFIG.gathering.woodPerTree);
+          bus.emit(EVENTS.TOAST, `+${CONFIG.gathering.woodPerTree} madera`);
+        }
+      } else {
+        // Tumbado: queda un rato en el suelo y luego se encoge y desaparece.
+        l.deadTimer -= dt;
+        if (l.deadTimer < 1) {
+          const s = Math.max(0, l.baseScale * Math.max(0, l.deadTimer));
+          l.mesh.scale.setScalar(s);
+        }
+        if (l.deadTimer <= 0) {
+          this.scene.remove(l.mesh); // geometrías/materiales son compartidos: no disponer
+          this._fallingLogs.splice(i, 1);
+        }
       }
     }
   }

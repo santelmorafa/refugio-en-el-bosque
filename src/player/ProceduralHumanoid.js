@@ -31,15 +31,19 @@ export class ProceduralHumanoid {
     const female = gender === 'female';
     // Elena: tono de piel más CREMA (menos marrón).
     if (female) skin.color.setHex(0xf0d6b8);
+    // Vestimenta de EXCURSIÓN / bosque: chaqueta (olivo / terracota), pantalón
+    // cargo caqui, mochila y gorra.
     const shirt = new THREE.MeshStandardMaterial({
-      color: female ? 0xb0506a : 0x3a6b57, roughness: 0.85, // blusa granate vs camisa verde
+      color: female ? 0xb06a3c : 0x556b2f, roughness: 0.9, // chaqueta terracota vs olivo
     });
     const pants = new THREE.MeshStandardMaterial({
-      color: female ? 0x5a3550 : 0x394452, roughness: 0.9, // falda/leggings vs pantalón
+      color: female ? 0x7a6547 : 0x6e5a3c, roughness: 0.95, // pantalón cargo caqui
     });
     const hair = new THREE.MeshStandardMaterial({
       color: female ? 0x6a3d1c : 0x2a1c12, roughness: 0.8,
     });
+    const gear = new THREE.MeshStandardMaterial({ color: 0x4a3b28, roughness: 0.95 }); // mochila/correas
+    const cap = new THREE.MeshStandardMaterial({ color: female ? 0x8a5a2c : 0x40532a, roughness: 0.9 });
 
     // Proporciones diferenciadas por sexo (silueta legible).
     const shoulderW = female ? 0.22 : 0.28;   // hombros más estrechos
@@ -61,14 +65,22 @@ export class ProceduralHumanoid {
     hips.position.y = 0.0; this.torso.add(hips);
 
     if (female) {
-      // Cintura estrecha (indica curvas) + busto insinuado + falda.
+      // Cintura estrecha (indica curvas) + busto insinuado (con la chaqueta).
       const waist = LIMB(0.26, 0.18, 0.2, shirt); waist.position.y = waistY; this.torso.add(waist);
       for (const sx of [-0.11, 0.11]) {
         const bust = new THREE.Mesh(new THREE.SphereGeometry(0.1, 10, 10), shirt);
         bust.position.set(sx, 0.34, 0.14); bust.scale.set(1, 0.85, 0.8); this.torso.add(bust);
       }
-      const skirt = new THREE.Mesh(new THREE.ConeGeometry(0.42, 0.5, 12, 1, true), pants);
-      skirt.position.y = -0.12; this.torso.add(skirt);
+    }
+
+    // --- Mochila de excursión (a la espalda) + correas por los hombros ---
+    const pack = new THREE.Mesh(new THREE.BoxGeometry(0.34, 0.44, 0.2), gear);
+    pack.position.set(0, 0.3, -0.22); pack.castShadow = true; this.torso.add(pack);
+    const flap = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.16, 0.06), gear);
+    flap.position.set(0, 0.42, -0.33); this.torso.add(flap);
+    for (const sx of [-0.16, 0.16]) {
+      const strap = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.5, 0.06), gear);
+      strap.position.set(sx, 0.34, 0.12); strap.rotation.x = -0.12; this.torso.add(strap);
     }
 
     // cabeza + cuello
@@ -88,6 +100,13 @@ export class ProceduralHumanoid {
       const pony = new THREE.Mesh(new THREE.CapsuleGeometry(0.06, 0.32, 4, 8), hair);
       pony.position.set(0, -0.02, -0.2); pony.rotation.x = 0.35; this.neck.add(pony);
     }
+
+    // Gorra de excursión (cúpula + visera). La coleta de Elena queda por detrás.
+    const capDome = new THREE.Mesh(
+      new THREE.SphereGeometry(0.155, 12, 8, 0, Math.PI * 2, 0, Math.PI * 0.55), cap);
+    capDome.position.y = 0.22; capDome.castShadow = true; this.neck.add(capDome);
+    const brim = new THREE.Mesh(new THREE.BoxGeometry(0.26, 0.04, 0.17), cap);
+    brim.position.set(0, 0.2, 0.17); this.neck.add(brim);
 
     // brazos (hombro -> codo -> mano) — hombros según sexo
     this.armL = this._makeArm(skin, shirt); this.armL.group.position.set(shoulderW, 0.5, 0); this.torso.add(this.armL.group);

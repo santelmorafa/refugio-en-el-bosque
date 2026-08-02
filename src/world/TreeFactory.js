@@ -74,7 +74,10 @@ export class TreeFactory {
           new THREE.Vector3(t.scale, t.scale, t.scale)
         );
         im.setMatrixAt(i, m);
+        // Acumular TODAS las instancias del árbol (tronco + copa) para poder
+        // ocultarlas todas al talar (antes la copa sobrescribía al tronco).
         t._instance = { mesh: im, index: i, matrix: m.clone() };
+        (t._instances = t._instances || []).push({ mesh: im, index: i });
       });
       im.instanceMatrix.needsUpdate = true;
       group.add(im);
@@ -101,7 +104,9 @@ export class TreeFactory {
           const ang = (k / perTree) * Math.PI * 2;
           const rr = 1.2 * t.scale;
           m.makeTranslation(t.x + Math.cos(ang) * rr, 4.0 * t.scale + Math.sin(k) * 0.4, t.z + Math.sin(ang) * rr);
-          im.setMatrixAt(idx++, m);
+          im.setMatrixAt(idx, m);
+          (t._instances = t._instances || []).push({ mesh: im, index: idx });
+          idx++;
         }
       }
       im.instanceMatrix.needsUpdate = true;
@@ -110,6 +115,22 @@ export class TreeFactory {
     }
 
     return { group, meshes };
+  }
+
+  // Árbol completo (tronco + copa) como un solo grupo con el pivote en la BASE,
+  // para animar la caída (se derrumba girando desde la base). Usa geometrías y
+  // materiales compartidos (no disponer al eliminar).
+  buildFallingTree(tree) {
+    const g = new THREE.Group();
+    g.add(new THREE.Mesh(this.trunkGeo, this.barkMat));
+    let canopyGeo = this.pineGeo, canopyMat = this.pineMat;
+    if (tree.type === TREE_TYPES.OAK) { canopyGeo = this.oakGeo; canopyMat = this.leafMat; }
+    else if (tree.type === TREE_TYPES.APPLE) { canopyGeo = this.appleGeo; canopyMat = this.appleLeafMat; }
+    g.add(new THREE.Mesh(canopyGeo, canopyMat));
+    g.traverse((o) => { if (o.isMesh) o.castShadow = true; });
+    g.position.set(tree.x, 0, tree.z);
+    g.scale.setScalar(tree.scale);
+    return g;
   }
 }
 
