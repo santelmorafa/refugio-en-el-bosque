@@ -93,9 +93,11 @@ export class ProceduralHumanoid {
     const head = new THREE.Mesh(new THREE.SphereGeometry(0.14, 16, 16), skin);
     head.position.y = 0.16; head.scale.set(0.9, 1.05, 0.95); head.castShadow = true;
     this.neck.add(head);
-    // Pelo: casquete + (mujer) melena y coleta claramente femeninas.
+    // Pelo: SOLO cubre arriba y atrás (empujado hacia atrás para NO tapar la
+    // cara — antes la esfera del pelo ocultaba el rostro y se veía marrón).
     const hairMesh = new THREE.Mesh(new THREE.SphereGeometry(0.15, 12, 12), hair);
-    hairMesh.position.y = 0.19; hairMesh.scale.set(1.02, female ? 1.15 : 0.8, 1.02);
+    hairMesh.position.set(0, 0.2, -0.045);
+    hairMesh.scale.set(1.0, female ? 1.0 : 0.82, 0.92);
     this.neck.add(hairMesh);
     if (female) {
       // Melena que cae por la nuca.
