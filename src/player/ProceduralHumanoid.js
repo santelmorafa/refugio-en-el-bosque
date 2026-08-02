@@ -32,19 +32,23 @@ export class ProceduralHumanoid {
     // Elena: rostro/piel color CREMA claro (nada de marrón). Emisivo sutil para
     // que la cara no se vea oscura bajo sombra o de noche.
     if (female) { skin.color.setHex(0xf5e7d4); skin.emissive = new THREE.Color(0x3a2c1e); skin.emissiveIntensity = 0.25; }
-    // Vestimenta de EXCURSIÓN / bosque: chaqueta (olivo / terracota), pantalón
-    // cargo caqui, mochila y gorra.
+    // Vestimenta: Marco de excursión (olivo/caqui); Elena en tonos de niña
+    // (fucsia + morado + rosa), todo combinado.
     const shirt = new THREE.MeshStandardMaterial({
-      color: female ? 0xb06a3c : 0x556b2f, roughness: 0.9, // chaqueta terracota vs olivo
+      color: female ? 0xe256a0 : 0x556b2f, roughness: 0.85, // chaqueta fucsia vs olivo
     });
     const pants = new THREE.MeshStandardMaterial({
-      color: female ? 0x7a6547 : 0x6e5a3c, roughness: 0.95, // pantalón cargo caqui
+      color: female ? 0x8e4a86 : 0x6e5a3c, roughness: 0.9, // pantalón morado vs cargo caqui
     });
     const hair = new THREE.MeshStandardMaterial({
       color: female ? 0x6a3d1c : 0x2a1c12, roughness: 0.8,
     });
-    const gear = new THREE.MeshStandardMaterial({ color: 0x4a3b28, roughness: 0.95 }); // mochila/correas
-    const cap = new THREE.MeshStandardMaterial({ color: female ? 0x8a5a2c : 0x40532a, roughness: 0.9 });
+    const gear = new THREE.MeshStandardMaterial({
+      color: female ? 0xd45fa0 : 0x4a3b28, roughness: 0.9, // mochila rosa vs marrón
+    });
+    const cap = new THREE.MeshStandardMaterial({
+      color: female ? 0xf4a8d2 : 0x40532a, roughness: 0.85, // gorra rosa clara vs verde
+    });
 
     // Proporciones diferenciadas por sexo (silueta legible).
     const shoulderW = female ? 0.22 : 0.28;   // hombros más estrechos

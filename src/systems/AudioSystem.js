@@ -19,6 +19,14 @@ export class AudioSystem {
     this.master = null;
     this.tension = null;      // nodos del drone de tensión activo
     this._wire();
+
+    // SEGURIDAD: el audio se apaga solo al ocultar/cerrar/descargar la página,
+    // sin depender de nadie más. Evita que la música siga sonando tras cerrar.
+    const hardStop = () => this.shutdown();
+    window.addEventListener('pagehide', hardStop);
+    window.addEventListener('beforeunload', hardStop);
+    window.addEventListener('unload', hardStop);
+    document.addEventListener('visibilitychange', () => { if (document.hidden) this.suspend(); });
   }
 
   ensure() {
